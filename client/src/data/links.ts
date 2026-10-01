@@ -2,7 +2,7 @@
  * 봄날의 햇살 - 링크 데이터 타입 및 카테고리 정의
  */
 
-export type CategoryId = "teaching" | "management" | "content" | "community";
+export type CategoryId = string;
 
 export interface LinkItem {
   id: string;
@@ -15,7 +15,7 @@ export interface LinkItem {
 }
 
 export interface Category {
-  id: CategoryId;
+  id: string;
   label: string;
   description: string;
   colorClass: string;
@@ -24,7 +24,7 @@ export interface Category {
   icon: string;
 }
 
-export const CATEGORIES: Category[] = [
+export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: "teaching",
     label: "수업 도구",
@@ -62,6 +62,8 @@ export const CATEGORIES: Category[] = [
     icon: "💬",
   },
 ];
+
+export const CATEGORIES = DEFAULT_CATEGORIES;
 
 export const DEFAULT_LINKS: LinkItem[] = [
   // 수업 도구

@@ -1,28 +1,44 @@
 /**
- * 봄날의 햇살 - 링크 추가 모달
+ * 봄날의 햇살 - 링크 추가 및 수정 모달
  * 화면을 떠나지 않는 작은 종이 양식
  */
 import { useState, useRef, useEffect } from "react";
-import { CATEGORIES, type CategoryId } from "../data/links";
-import { addLink } from "../lib/storage";
+import { getAllCategories, addLink, updateLink } from "../lib/storage";
+import type { LinkItem, Category } from "../data/links";
 import { toast } from "sonner";
 
 interface AddLinkModalProps {
   onClose: () => void;
+  initialData?: LinkItem | null;
 }
 
-export default function AddLinkModal({ onClose }: AddLinkModalProps) {
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("https://");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<CategoryId>("teaching");
-  const [icon, setIcon] = useState("🔗");
+export default function AddLinkModal({
+  onClose,
+  initialData,
+}: AddLinkModalProps) {
+  const [categories, setCategories] = useState<Category[]>(getAllCategories);
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [url, setUrl] = useState(initialData?.url || "https://");
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [category, setCategory] = useState<string>(
+    initialData?.category || categories[0]?.id || "teaching",
+  );
+  const [icon, setIcon] = useState(initialData?.icon || "🔗");
   const overlayRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const list = getAllCategories();
+    setCategories(list);
+    if (!initialData && list.length > 0 && !list.some((c) => c.id === category)) {
+      setCategory(list[0].id);
+    }
+  }, [category, initialData]);
+
+  useEffect(() => {
     titleRef.current?.focus();
-    // Prevent body scroll
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
@@ -45,17 +61,27 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
       return;
     }
 
-    addLink({
-      title: title.trim(),
-      url: url.trim(),
-      description: description.trim(),
-      category,
-      icon,
-    });
+    if (initialData) {
+      updateLink(initialData.id, {
+        title: title.trim(),
+        url: url.trim(),
+        description: description.trim(),
+        category,
+        icon: icon.trim() || "🔗",
+      });
+      toast.success(`"${title.trim()}" 도구가 수정되었습니다.`);
+    } else {
+      addLink({
+        title: title.trim(),
+        url: url.trim(),
+        description: description.trim(),
+        category,
+        icon: icon.trim() || "🔗",
+      });
+      toast.success(`"${title.trim()}" 도구가 추가되었습니다.`);
+    }
 
-    toast.success(`"${title.trim()}" 도구가 추가되었습니다.`);
     onClose();
-    // Force re-render in parent
     window.dispatchEvent(new Event("links-updated"));
   };
 
@@ -66,7 +92,7 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
       className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/30 backdrop-blur-sm animate-fadeIn"
       id="add-link-modal"
     >
-      <div className="w-full max-w-md mx-4 bg-card rounded-2xl shadow-2xl animate-fadeInUp p-6 relative">
+      <div className="w-full max-w-md mx-4 bg-card rounded-2xl shadow-2xl animate-fadeInUp p-6 relative max-h-[92vh] overflow-y-auto border border-border">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -94,10 +120,12 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
             className="text-xl font-bold text-foreground"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            새로운 도구 추가
+            {initialData ? "도구 정보 수정" : "새로운 도구 추가"}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            자주 쓰는 교육 도구를 추가해보세요.
+            {initialData
+              ? "도구의 이름, 링크 주소, 목차를 수정합니다."
+              : "자주 쓰는 교육 도구를 추가해보세요."}
           </p>
         </div>
 
@@ -182,10 +210,10 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
           {/* Category */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              카테고리
+              목차 (카테고리)
             </label>
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
@@ -194,7 +222,7 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
                               transition-all duration-150 border
                               ${
                                 category === cat.id
-                                  ? "border-sunbeam bg-sunbeam/10 text-sunbeam-dark"
+                                  ? "border-sunbeam bg-sunbeam/10 text-sunbeam-dark font-semibold shadow-xs"
                                   : "border-border bg-background text-muted-foreground hover:bg-muted/50"
                               }`}
                   id={`cat-select-${cat.id}`}
@@ -224,7 +252,7 @@ export default function AddLinkModal({ onClose }: AddLinkModalProps) {
                          shadow-sm hover:shadow-md"
               id="btn-submit"
             >
-              추가하기
+              {initialData ? "수정 완료" : "추가하기"}
             </button>
           </div>
         </form>

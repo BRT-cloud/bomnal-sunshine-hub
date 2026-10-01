@@ -1,12 +1,14 @@
 /**
  * 봄날의 햇살 - 링크 카드 컴포넌트
- * 종이 카드 스타일, 색상 스트립, 외부 링크 화살표
+ * 종이 카드 스타일, 색상 스트립, 외부 링크 화살표, 관리자 수정/삭제 버튼
  */
 import type { LinkItem } from "../data/links";
 
 interface LinkCardProps {
   link: LinkItem;
   colorClass: string;
+  isAdmin?: boolean;
+  onEdit?: (link: LinkItem) => void;
   onDelete?: (id: string) => void;
   index: number;
 }
@@ -14,6 +16,8 @@ interface LinkCardProps {
 export default function LinkCard({
   link,
   colorClass,
+  isAdmin,
+  onEdit,
   onDelete,
   index,
 }: LinkCardProps) {
@@ -30,18 +34,48 @@ export default function LinkCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3
-            className="text-[0.95rem] font-bold text-foreground leading-snug truncate"
-            style={{ fontFamily: "var(--font-body)" }}
-          >
-            {link.title}
-          </h3>
+          <div className="flex items-start justify-between gap-1">
+            <h3
+              className="text-[0.95rem] font-bold text-foreground leading-snug truncate"
+              style={{ fontFamily: "var(--font-body)" }}
+              title={link.title}
+            >
+              {link.title}
+            </h3>
+
+            {/* Admin quick badge/buttons */}
+            {isAdmin && (
+              <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(link)}
+                    className="p-1 text-muted-foreground/70 hover:text-sunbeam-dark hover:bg-sunbeam/10 rounded transition-colors text-xs"
+                    title="도구 수정"
+                    aria-label={`${link.title} 수정`}
+                  >
+                    ✏️
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={() => onDelete(link.id)}
+                    className="p-1 text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 rounded transition-colors text-xs"
+                    title="도구 삭제"
+                    aria-label={`${link.title} 삭제`}
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           <p className="mt-1.5 text-[0.82rem] text-muted-foreground leading-relaxed line-clamp-2">
             {link.description}
           </p>
 
           {/* Action row */}
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex items-center justify-between">
             <a
               href={link.url}
               target="_blank"
@@ -67,7 +101,8 @@ export default function LinkCard({
               </svg>
             </a>
 
-            {link.isCustom && onDelete && (
+            {/* Non-admin custom link delete */}
+            {!isAdmin && link.isCustom && onDelete && (
               <button
                 onClick={() => onDelete(link.id)}
                 className="text-[0.72rem] text-muted-foreground/60 hover:text-destructive transition-colors"

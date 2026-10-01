@@ -2,10 +2,15 @@
  * 봄날의 햇살 - 히어로 섹션
  * 비대칭 레이아웃, 종이 레이어 효과, 봄 분위기
  */
+import type { Category } from "../data/links";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  categories?: Category[];
+}
+
+export default function HeroSection({ categories }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden py-16 md:py-24" id="hero">
+    <section className="relative overflow-hidden py-14 md:py-20" id="hero">
       {/* Decorative background layers */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Warm gradient */}
@@ -52,39 +57,30 @@ export default function HeroSection() {
           </h2>
 
           {/* Sub text */}
-          <p className="mt-6 text-lg text-ink-light leading-relaxed max-w-xl animate-fadeInUp delay-2">
+          <p className="mt-5 text-base md:text-lg text-ink-light leading-relaxed max-w-xl animate-fadeInUp delay-2">
             교육 현장에서 자주 쓰는 웹앱을 한 곳에 모았습니다.
             <br className="hidden md:block" />
             필요한 순간 바로 꺼내 쓰세요.
           </p>
 
-          {/* Quick stats */}
-          <div className="flex items-center gap-6 mt-8 animate-fadeInUp delay-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sunbeam/10 text-sunbeam">
-                📖
-              </span>
-              <span>수업 도구</span>
+          {/* Category quick badges */}
+          {categories && categories.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 md:gap-5 mt-7 animate-fadeInUp delay-3">
+              {categories.slice(0, 5).map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground bg-background/50 px-2.5 py-1 rounded-xl border border-border/40"
+                >
+                  <span
+                    className={`flex items-center justify-center w-7 h-7 rounded-lg ${cat.bgClass || "bg-sunbeam/10"}`}
+                  >
+                    {cat.icon}
+                  </span>
+                  <span className="font-medium">{cat.label}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sage/10 text-sage">
-                📋
-              </span>
-              <span>학급 관리</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-coral/10 text-coral">
-                🎨
-              </span>
-              <span>콘텐츠</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky/10 text-sky">
-                💬
-              </span>
-              <span>커뮤니티</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

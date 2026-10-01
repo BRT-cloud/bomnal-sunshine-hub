@@ -26,9 +26,8 @@ export default function Footer() {
           </div>
 
           {/* Center: Description */}
-          <p className="text-xs text-muted-foreground/70 text-center">
-            교육 현장에서 자주 쓰는 웹앱을 한 곳에 모아, 필요한 순간 바로 꺼내
-            쓰는 교사용 링크 허브입니다.
+          <p className="text-xs text-muted-foreground/70 text-center font-medium">
+            배래쌤이 운영하는 사이트입니다
           </p>
 
           {/* Right: Info */}
