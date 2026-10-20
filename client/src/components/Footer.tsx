@@ -1,39 +1,33 @@
 /**
  * 봄날의 햇살 - 푸터 컴포넌트
  */
+import { Sparkles, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-border/50 bg-cream-dark/30">
+    <footer className="mt-auto border-t border-border/60 bg-cream-dark/40 relative z-10">
       <div className="container py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Left: Brand */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <svg
-              viewBox="0 0 64 64"
-              className="w-6 h-6 opacity-50"
-              aria-hidden="true"
-            >
-              <circle cx="32" cy="32" r="8" fill="#D89B39" />
-              <g stroke="#D89B39" strokeWidth="2" strokeLinecap="round" opacity="0.5">
-                <line x1="32" y1="12" x2="32" y2="18" />
-                <line x1="32" y1="46" x2="32" y2="52" />
-                <line x1="12" y1="32" x2="18" y2="32" />
-                <line x1="46" y1="32" x2="52" y2="32" />
-              </g>
-            </svg>
-            <span>봄날의 햇살</span>
+          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+            <span className="text-amber-500">☀️</span>
+            <span style={{ fontFamily: "var(--font-display)" }}>봄날의 햇살</span>
+            <span className="text-xs font-normal text-muted-foreground ml-1">
+              — 교사용 교육 도구 허브
+            </span>
           </div>
 
           {/* Center: Description */}
-          <p className="text-xs text-muted-foreground/70 text-center font-medium">
-            배래쌤이 운영하는 사이트입니다
+          <p className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+            <span>배래쌤이 운영하는 도구 허브입니다</span>
+            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
           </p>
 
           {/* Right: Info */}
-          <p className="text-xs text-muted-foreground/50">
-            데이터는 브라우저에 저장됩니다
-          </p>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>어떤 브라우저에서도 그대로 이어집니다</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,8 +1,9 @@
 /**
  * 봄날의 햇살 - 관리자 로그인 모달
- * 비밀번호: 0301
+ * 비밀번호: 0809 (구글 시트 연동 시 서버에서 안전하게 검증)
  */
 import { useState, useRef, useEffect } from "react";
+import { Lock, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { loginAdmin } from "../lib/admin";
 import { toast } from "sonner";
 
@@ -18,43 +19,59 @@ export default function AdminLoginModal({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
     document.body.style.overflow = "hidden";
+
+    // Escape 키로 모달 닫기
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [onClose]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) {
+    if (!password.trim()) {
       setError(true);
       toast.error("비밀번호를 입력해주세요.");
       return;
     }
 
-    const success = loginAdmin(password);
-    if (success) {
-      toast.success("관리자 모드로 전환되었습니다! 👑", {
-        description: "도구 추가/삭제/수정 및 목차 편집이 가능합니다.",
-      });
-      onSuccess?.();
-      onClose();
-    } else {
-      setError(true);
-      toast.error("비밀번호가 일치하지 않습니다.", {
-        description: "관리자 비밀번호를 다시 확인해주세요.",
-      });
-      setPassword("");
-      inputRef.current?.focus();
+    setIsLoading(true);
+    try {
+      const success = await loginAdmin(password.trim());
+      if (success) {
+        toast.success("관리자 모드로 전환되었습니다! ✨", {
+          description: "도구 추가, 수정, 삭제 및 목차 관리가 가능합니다.",
+        });
+        onSuccess?.();
+        onClose();
+      } else {
+        setError(true);
+        toast.error("비밀번호가 일치하지 않습니다.", {
+          description: "관리자 비밀번호를 다시 확인해주세요.",
+        });
+        setPassword("");
+        inputRef.current?.focus();
+      }
+    } catch {
+      toast.error("인증 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,48 +79,41 @@ export default function AdminLoginModal({
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/40 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fadeIn"
       id="admin-login-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-modal-title"
     >
-      <div className="w-full max-w-sm mx-4 bg-card rounded-2xl shadow-2xl p-6 relative border border-border animate-fadeInUp">
-        {/* Close Button */}
+      <div className="w-full max-w-sm bg-card rounded-2xl shadow-2xl p-6 relative border border-border animate-fadeInUp">
+        {/* 닫기 버튼 */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center
                      text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           aria-label="닫기"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <line x1="4" y1="4" x2="12" y2="12" />
-            <line x1="12" y1="4" x2="4" y2="12" />
-          </svg>
+          <X className="w-4 h-4" />
         </button>
 
-        {/* Header */}
+        {/* 헤더 */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-sunbeam/15 text-sunbeam-dark flex items-center justify-center mx-auto mb-3 text-2xl shadow-inner">
-            🔐
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-700 flex items-center justify-center mx-auto mb-3 shadow-inner">
+            <Lock className="w-6 h-6" />
           </div>
           <h3
+            id="admin-modal-title"
             className="text-lg font-bold text-foreground"
             style={{ fontFamily: "var(--font-display)" }}
           >
             관리자 모드
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            도구 및 목차를 관리하려면 비밀번호를 입력해주세요.
+            도구를 추가하거나 목차를 수정하려면 비밀번호를 입력해주세요.
           </p>
         </div>
 
-        {/* Form */}
+        {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <div className="relative">
@@ -116,21 +126,27 @@ export default function AdminLoginModal({
                   if (error) setError(false);
                 }}
                 placeholder="비밀번호 입력"
-                className={`w-full h-11 px-4 pr-10 rounded-xl border text-sm bg-background transition-all
-                           focus:outline-none focus:ring-2 focus:ring-sunbeam/40
+                className={`w-full h-11 px-4 pr-11 rounded-xl border text-sm bg-background transition-all
+                           focus:outline-none focus:ring-2 focus:ring-amber-500/40
                            ${
                              error
                                ? "border-destructive text-destructive focus:ring-destructive/30"
                                : "border-input text-foreground"
                            }`}
                 autoComplete="current-password"
+                disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground text-xs font-medium"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
               >
-                {showPassword ? "숨김" : "표시"}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
             {error && (
@@ -144,17 +160,20 @@ export default function AdminLoginModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
+              disabled={isLoading}
+              className="flex-1 h-10 rounded-xl border border-border text-sm font-semibold
                          text-muted-foreground hover:bg-muted/60 transition-colors"
             >
               취소
             </button>
             <button
               type="submit"
-              className="flex-1 h-10 rounded-xl bg-sunbeam text-white text-sm font-semibold
-                         hover:bg-sunbeam-dark active:scale-[0.98] transition-all shadow-sm"
+              disabled={isLoading}
+              className="flex-1 h-10 rounded-xl bg-amber-600 text-white text-sm font-bold
+                         hover:bg-amber-700 active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-1.5"
             >
-              확인
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>확인</span>
             </button>
           </div>
         </form>
