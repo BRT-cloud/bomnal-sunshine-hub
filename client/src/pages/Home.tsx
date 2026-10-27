@@ -20,7 +20,7 @@ import CategoryManageModal from "../components/CategoryManageModal";
 import AmbientScene from "../components/motion/AmbientScene";
 import type { LinkItem, Category } from "../data/links";
 import type { Season } from "../lib/season";
-import { getSelectedSeason, setSelectedSeason, SEASONS } from "../lib/season";
+import { getCurrentSeason } from "../lib/season";
 import {
   getAllLinks,
   removeLink,
@@ -47,7 +47,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<string | "all">("all");
   const [search, setSearch] = useState("");
   const [isPushingCloud, setIsPushingCloud] = useState(false);
-  const [season, setSeason] = useState<Season>(getSelectedSeason);
+  const [season] = useState<Season>(getCurrentSeason);
 
   // 모달 상태
   const [showAddModal, setShowAddModal] = useState(false);
@@ -67,12 +67,6 @@ export default function Home() {
       prev === "all" || cats.some((c) => c.id === prev) ? prev : "all",
     );
   }, []);
-
-  const handleSelectSeason = (newSeason: Season) => {
-    setSeason(newSeason);
-    setSelectedSeason(newSeason);
-    toast.success(`${SEASONS[newSeason].icon} ${SEASONS[newSeason].name} 테마 모션이 적용되었습니다.`);
-  };
 
   // 마운트 시 로컬스토리지 이벤트 리스너 등록 & 구글 시트 백그라운드 갱신
   useEffect(() => {
@@ -199,12 +193,7 @@ export default function Home() {
       />
 
       {/* 사계절 맞춤 히어로 섹션 */}
-      <HeroSection
-        categories={categories}
-        season={season}
-        onSelectCategory={(id) => setActiveCategory(id)}
-        onSelectSeason={handleSelectSeason}
-      />
+      <HeroSection season={season} />
 
       {/* 메인 콘텐츠 영역 */}
       <main className="container flex-1 pb-20 relative z-10" id="main-content">

@@ -1,33 +1,25 @@
 /**
  * 봄날의 햇살 - 히어로 섹션
  * 
- * - 빛을 사방으로 내보내는 귀여운 사계절 햇님 캐릭터 (SunCharacter)
- * - 3~5월 봄, 6~8월 여름, 9~11월 가을, 12~2월 겨울 계절 테마 반영
- * - 사계절 미리보기 및 자동 계절 전환 뱃지
+ * - 실시간 날짜 연동: 3~5월 봄, 6~8월 여름, 9~11월 가을, 12~2월 겨울 테마 100% 자동 반영
+ * - 불필요한 수동 선택 버튼 없이 깔끔하게 날짜 기반 단일 뱃지만 노출
+ * - 계절별 햇님 캐릭터 (SunCharacter: 단풍 머리핀, 선글라스, 벚꽃, 귀마개)
  */
 import { motion } from "framer-motion";
-import type { Category } from "../data/links";
 import type { Season } from "../lib/season";
-import { SEASONS } from "../lib/season";
+import { SEASONS, getCurrentDateInfo } from "../lib/season";
 import SunCharacter from "./motion/SunCharacter";
 
 interface HeroSectionProps {
-  categories?: Category[];
   season: Season;
-  onSelectCategory?: (id: string) => void;
-  onSelectSeason?: (season: Season) => void;
 }
 
-export default function HeroSection({
-  categories,
-  season,
-  onSelectCategory,
-  onSelectSeason,
-}: HeroSectionProps) {
+export default function HeroSection({ season }: HeroSectionProps) {
   const currentSeason = SEASONS[season];
+  const dateInfo = getCurrentDateInfo();
 
   return (
-    <section className="relative overflow-hidden py-10 md:py-16" id="hero">
+    <section className="relative overflow-hidden py-8 md:py-14" id="hero">
       {/* 부드러운 햇살 배경 레이어 */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -49,40 +41,18 @@ export default function HeroSection({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           {/* 좌측: 타이틀 및 계절 안내 문구 */}
           <div className="md:col-span-7 lg:col-span-8 space-y-4">
-            {/* 상단: 사계절 뱃지 & 계절 선택 버튼 */}
-            <div className="flex flex-wrap items-center gap-2">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${currentSeason.badgeBg} ${currentSeason.badgeText}`}
-              >
-                <span>{currentSeason.icon}</span>
-                <span className="text-hand text-base font-bold tracking-wide">
-                  지금은 {currentSeason.name}의 계절 ({currentSeason.months})
-                </span>
-              </motion.div>
-
-              {/* 사계절 변경 버튼 그룹 */}
-              {onSelectSeason && (
-                <div className="inline-flex items-center gap-1 bg-card/80 p-0.5 rounded-full border border-border/70 text-xs">
-                  {(["spring", "summer", "autumn", "winter"] as Season[]).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => onSelectSeason(s)}
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ${
-                        season === s
-                          ? "bg-amber-600 text-white shadow-2xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                      title={`${SEASONS[s].name} (${SEASONS[s].months})`}
-                    >
-                      {SEASONS[s].icon} {SEASONS[s].name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* 상단: 오늘 날짜에 자동 연동된 단일 심플 뱃지 */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold ${currentSeason.badgeBg} ${currentSeason.badgeText}`}
+            >
+              <span className="text-sm">{currentSeason.icon}</span>
+              <span className="text-hand text-base font-bold tracking-wide">
+                {dateInfo.month}월, {currentSeason.name}의 햇살과 함께하는 도구 책상
+              </span>
+            </motion.div>
 
             {/* 메인 헤드라인 */}
             <motion.h2
@@ -126,29 +96,6 @@ export default function HeroSection({
               <br />
               {currentSeason.subtitle}
             </motion.p>
-
-            {/* 5개 카테고리 퀵 뱃지들 */}
-            {categories && categories.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.3 }}
-                className="flex flex-wrap items-center gap-2.5 pt-2"
-              >
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => onSelectCategory?.(cat.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold
-                               bg-card/90 border border-border hover:border-amber-400 hover:bg-amber-50/50 
-                               text-ink transition-all shadow-xs hover:shadow-sm"
-                  >
-                    <span>{cat.icon}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
-              </motion.div>
-            )}
           </div>
 
           {/* 우측: 빛을 뿜어내는 사계절 맞춤 햇님 캐릭터 (모션 그래픽) */}
